@@ -27,4 +27,4 @@ jobs:
       - name: Build with Gradle
         run: |
           cd app
-          gradle assembleRelease --no-daemon
+          gradle assembleRelease --stacktrace --info --no-daemon
