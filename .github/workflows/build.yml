@@ -21,7 +21,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          cd app
+          gradle wrapper --gradle-version 8.1.0
           chmod +x gradlew
           ./gradlew assembleRelease
 
