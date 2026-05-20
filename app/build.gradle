@@ -1,7 +1,9 @@
 plugins { id 'com.android.application' }
+
 android {
     namespace 'com.helasub.app'
     compileSdk 33
+
     defaultConfig {
         applicationId "com.helasub.app"
         minSdk 21
@@ -9,7 +11,23 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // සර්වර් එකට main ෆෝල්ඩර් එකෙන්ම source ගන්න කියන කොටස
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+        }
+    }
 }
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
 }
