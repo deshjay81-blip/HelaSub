@@ -26,3 +26,44 @@ Open `app/src/main/java/com/helasub/app/MainActivity.java` and modify the follow
   private final List<String> adDomains = Arrays.asList(
       "doubleclick.net", "adsterra.com", "your-target-ad-domain.com"
   );
+
+### 2. Change the Application Name & Package Name
+App Name: Open `app/src/main/AndroidManifest.xml` Inside the <application> tag, change the android:label value:
+
+XML
+`android:label="Your Custom App Name"`
+Package Name: If you wish to change the unique bundle identifier, update the applicationId and namespace strings inside app/build.gradle:
+
+Groovy
+`android {
+    namespace 'com.yourname.app'
+    defaultConfig {
+        applicationId "com.yourname.app"
+    }
+}`
+Note: If you change the package name, make sure to update the folder directory path under app/src/main/java/ and the package declarations inside your Java files accordingly.
+
+### 3. Change App Icons & TV Banner Labels
+To use your custom branding, replace or add the image assets located inside the `app/src/main/res/drawable/ directory:`
+
+Mobile App Icon (app_icon.png): A standard square image (recommended resolution: 512x512 pixels).
+
+Android TV Banner (tv_banner.png): A rectangular horizontal image displayed on the Android TV Leanback home screen (standard resolution: 320x180 pixels or 16:9 aspect ratio).
+
+Note: Ensure your image file names contain only lowercase letters, numbers, and underscores (_). Hyphens (-) are not allowed by the Android asset system.
+
+## How to Build the APK Using GitHub Actions
+Since the workflow pipeline is pre-configured, you don't need any local setup to download the compiled .apk:
+
+Go to the Actions tab at the top of your repository page.
+
+Under the actions list on the left, click Build Android APK.
+
+Click the Run workflow dropdown menu button on the right side.
+
+Click the green/blue Run workflow button to trigger the execution process.
+
+Once complete (typically takes around 1-2 minutes), navigate to the Releases section of your repository to download the final app-debug.apk.
+
+## License
+This project is open-source and available under the MIT License.
