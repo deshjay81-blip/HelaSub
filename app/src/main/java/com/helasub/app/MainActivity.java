@@ -13,14 +13,13 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
-    // Block කරන්න ඕනේ ප්‍රධාන Ad Domains ලැයිස්තුව
     private final List<String> adDomains = Arrays.asList(
         "doubleclick.net", "adservice.google.com", "googlesyndication.com",
         "popads.net", "propellerads.com", "adsterra.com", "infolinks.com"
     );
 
     @Override
-    protected void Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         webView = new WebView(this);
@@ -33,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
                 String url = request.getUrl().toString();
                 for (String domain : adDomains) {
                     if (url.contains(domain)) {
-                        // Ad එකක් අහුවුනොත් හිස් response එකක් යවා block කරයි
                         return new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream("".getBytes()));
                     }
                 }
@@ -41,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // ඔයාගේ වෙබ් අඩවියේ ලිපිනය
         webView.loadUrl("https://helasub.com");
         setContentView(webView);
     }
