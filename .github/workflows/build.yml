@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Release එකක් පබ්ලිෂ් කරන්න අවසර ලබා දීම
+      contents: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -36,4 +36,4 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: HelaSub Build v1.0.${{ github.run_number }}
-          files: app/app/build/outputs/apk/**/*.apk
+          files: app/build/outputs/apk/**/*.apk
