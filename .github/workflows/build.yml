@@ -31,13 +31,9 @@ jobs:
           cd app
           gradle assemble --no-daemon
 
-      - name: Rename APK
-        run: |
-          mv app/app/build/outputs/apk/release/app-release-unsigned.apk app/app/build/outputs/apk/release/HelaSub.apk
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: HelaSub Build v1.0.${{ github.run_number }}
-          files: app/app/build/outputs/apk/release/HelaSub.apk
+          files: app/app/build/outputs/apk/**/*.apk
