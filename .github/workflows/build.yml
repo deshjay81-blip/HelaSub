@@ -19,14 +19,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.1.0'
+
       - name: Build with Gradle
         run: |
-          gradle wrapper --gradle-version 8.1.0
-          chmod +x gradlew
-          ./gradlew assembleRelease
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: app/app/build/outputs/apk/release/app-release-unsigned.apk
+          cd app
+          gradle assembleRelease --no-daemon
