@@ -2,14 +2,14 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.helasub.app'
-    compileSdk 33
+    compileSdk 35 // 🔥 Android 15 සඳහා 35 දක්වා වැඩි කළා
 
     defaultConfig {
         applicationId "com.helasub.app"
-        minSdk 21
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        minSdk 21       // Android 5.0 සහ ඉහළ සියලුම TV/Phones සඳහා
+        targetSdk 35    // 🔥 Play Protect Warning එක නැති කිරීමට 35 කළා
+        versionCode 2
+        versionName "1.1"
     }
 
     buildTypes {
@@ -21,5 +21,5 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0' // 🔥 Libraries ද අලුත්ම ඒවාට Update කළා
 }
