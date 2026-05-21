@@ -12,9 +12,9 @@
         android:label="HelaSub"
         android:theme="@style/Theme.AppCompat.NoActionBar">
         
-        <activity android:name="com.helasub.app.MainActivity"
+    <activity android:name="com.helasub.app.MainActivity"
             android:exported="true"
-            android:screenOrientation="unspecified">
+            android:configChanges="orientation|screenSize|layoutDirection|screenLayout">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
