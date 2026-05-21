@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // 🔥 [TV FIX] ඇප් එක ඇතුළේ ග්‍රැෆික්ස් සහ ස්ක්‍රෝල් එක ස්මූත් කරන්න Hardware Acceleration ඔන් කිරීම
+        // Hardware Acceleration ඔන් කිරීම (ස්ක්‍රෝල් එක ස්මූත් වීමට)
         getWindow().setFlags(
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // 🔥 [TV FIX] ටීවී එකේ රැම් එක මදි වෙලා ක්‍රෑෂ් වීම වැළැක්වීමට Layer Type එක Hardware කිරීම
+        // 🛠️ [DOOPLAY CRASH FIX 1] WebView එකේ Hardware Rendering පාවිච්චි කිරීම
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         customViewContainer = new FrameLayout(this);
@@ -62,17 +62,21 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
         
-        // 🔥 [TV FIX] ස්ක්‍රෝල් එකේදී පින්තූර ලැග් නොවී වේගයෙන් ලෝඩ් වීමට සෙටින්ග්ස්
-        webSettings.setLoadsImagesAutomatically(true);
-        webSettings.setAllowFileAccess(true);
+        // 🛠️ [DOOPLAY CRASH FIX 2] WordPress cache එක නිසා රැම් එක පිරීම වැළැක්වීමට Cache Mode එක වෙනස් කිරීම
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setAppCacheEnabled(true);
+        webSettings.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
         
+        // 🛠️ [DOOPLAY CRASH FIX 3] Dooplay තීම් එකේ දාවන වේගය වැඩි කිරීමට Render Priority එක High කිරීම
+        webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
+        webSettings.setEnableSmoothTransition(true);
+
         webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 10; BRAVIA 4K UR3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36");
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         
         webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
         webSettings.setSupportMultipleWindows(false); 
-        webView.clearCache(true);
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -88,9 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 customView = view;
                 customViewCallback = callback;
-                
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                
                 webView.setVisibility(View.GONE);
                 customViewContainer.addView(customView);
                 customViewContainer.setVisibility(View.VISIBLE);
@@ -99,9 +101,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onHideCustomView() {
                 if (customView == null) return;
-
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                
                 customView.setVisibility(View.GONE);
                 customViewContainer.removeView(customView);
                 customView = null;
@@ -139,6 +139,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.loadUrl("https://helasub.com");
+    }
+
+    // 🛠️ [DOOPLAY CRASH FIX 4] ඇප් එක පසුබිමට යද්දී හෝ වහද්දී මතකය (Memory) සම්පූර්ණයෙන්ම නිදහස් කිරීම
+    @Override
+    protected void onDestroy() {
+        if (webView != null) {
+            webView.loadUrl("about:blank");
+            webView.clearCache(true);
+            webView.removeAllViews();
+            webView.destroy();
+        }
+        super.onDestroy();
     }
 
     @Override
