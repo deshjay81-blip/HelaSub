@@ -10,10 +10,22 @@ import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import androidx.appcompat.app.AppCompatActivity;
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+
+    // 📺 වීඩියෝ ප්ලේ වෙන්න අනිවාර්යයෙන්ම ඉඩ දිය යුතු (Allowed) සර්වර්ස් ලැයිස්තුව
+    private final List<String> allowedVideoDomains = Arrays.asList(
+        "helasub.com",
+        "streamtape.com", "image.tmdb.org", "dsk.strp2p.live",
+        "youtube.com", "filemoon.to", "filemoon.nl",
+        "vidhide.to", "vidhidepro.com", "vidhide.com",
+        "voe.sx", "vudeo.co", "doodstream.com", "dood.to", "dood.ws",
+        "googleusercontent.com", "googleapis.com" // Google Drive වීඩියෝ සඳහා
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,42 +34,44 @@ public class MainActivity extends AppCompatActivity {
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
         
-        // Settings සකස් කිරීම
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false); // ටීවී එකේ ඔටෝ ප්ලේ වෙන්න
         
-        // Pop-up වළක්වන Settings
+        // Pop-up ඇඩ්ස් සම්පූර්ණයෙන්ම වැළැක්වීම
         webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
         webSettings.setSupportMultipleWindows(false);
         webView.clearCache(true);
 
         webView.setWebViewClient(new WebViewClient() {
             
-            // 1. මේකෙන් පසුබිමෙන් ලෝඩ් වෙන Scripts/Images (Ads) ඔක්කොම බ්ලොක් කරනවා helasub.com නොවේ නම්
+            // 1. පසුබිමෙන් ලෝඩ් වෙන දේවල් (Scripts, Styles, Videos) ෆිල්ටර් කිරීම
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
                 
-                // ලින්ක් එකේ helasub.com තියෙනවාද කියලා විතරක් බලයි
-                if (url.contains("helasub.com")) {
-                    return super.shouldInterceptRequest(view, request); // සාමාන්‍ය පරිදි ලෝඩ් වෙන්න හරින්න
+                // ලෝඩ් වෙන්න හදන ලින්ක් එක අපේ සයිට් එකේ හෝ අනුමත වීඩියෝ සර්වර් එකක එකක්දැයි බැලීම
+                for (String domain : allowedVideoDomains) {
+                    if (url.contains(domain)) {
+                        return super.shouldInterceptRequest(view, request); // වීඩියෝ එක ප්ලේ වෙන්න ඉඩ දෙන්න
+                    }
                 }
                 
-                // helasub.com නැති හැමදේම (ඇඩ්ස්, ට්‍රැකර්ස්) මෙතනින්ම බ්ලොක් කරලා හිස් response එකක් යවයි
+                // අනුමත නැති අනෙක් සියලුම ඇඩ් ලින්ක්ස් මෙතනින්ම බ්ලොක් වේ
                 return new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream("".getBytes()));
             }
 
-            // 2. මේකෙන් පරිශීලකයා ක්ලික් කරන ප්‍රධාන ලින්ක් (Navigation) ෆිල්ටර් කරනවා
+            // 2. ප්‍රධාන ලින්ක් ක්ලික් කිරීම් පාලනය
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
                 
+                // සාමාන්‍ය පිටු ඇප් එක ඇතුළෙම ඕපන් වෙන්න හැරීම
                 if (url.contains("helasub.com")) {
-                    return false; // ඇප් එක ඇතුළෙම පිටුව ලෝඩ් වෙන්න දෙන්න
+                    return false; 
                 }
                 
-                // වැරදීමකින්වත් වෙනත් සයිට් එකක ලින්ක් එකක් ක්ලික් වුණොත්, ඇප් එක ඇතුළේ ලෝඩ් වෙන්නේ නැතුව 
-                // ෆෝන් එකේ/ටීවී එකේ තියෙන සාමාන්‍ය බ්‍රව්සර් එකකින් (Chrome වගේ) ඕපන් කරන්න කියලා එලියට තල්ලු කරයි.
+                // වෙනත් බාහිර ලින්ක් එකක් ක්ලික් වුවහොත් ඇප් එකෙන් පිටත බ්‍රව්සර් එකකින් ඕපන් කිරීම
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 view.getContext().startActivity(intent);
                 return true;
@@ -68,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(webView);
     }
 
-    // Back Button එක එබුවම කලින් පිටුවට යාම
     @Override
     public void onBackPressed() {
         if (webView != null && webView.canGoBack()) {
