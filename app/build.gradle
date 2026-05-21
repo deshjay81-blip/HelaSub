@@ -4,14 +4,14 @@ plugins {
 
 android {
     namespace 'com.helasub.app'
-    compileSdk 35
+    compileSdk 34 // 🔥 TV සඳහා වඩාත්ම ස්ථාවර 34 (Android 14) දක්වා සකස් කළා
 
     defaultConfig {
         applicationId "com.helasub.app"
         minSdk 21
-        targetSdk 35
-        versionCode 2
-        versionName "1.1"
+        targetSdk 34 // 🔥 TV එකේ ක්‍රෑෂ් වීම් වැළැක්වීමට 34 කළා
+        versionCode 3
+        versionName "1.2"
     }
 
     buildTypes {
@@ -21,7 +21,6 @@ android {
         }
     }
 
-    // 🔥 [SUPER FIX] පරණ සහ අලුත් Kotlin ලයිබ්‍රරි හැප්පෙන එක මෙතනින් වළක්වනවා
     configurations.all {
         resolutionStrategy {
             exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"
@@ -31,5 +30,5 @@ android {
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.appcompat:appcompat:1.6.1" // TV සඳහා ස්ටේබල් වර්ෂන් එක
 }
