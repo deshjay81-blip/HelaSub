@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private WebChromeClient.CustomViewCallback customViewCallback;
     private View customView;
 
+    // 📺 Allowed Domains (අත්‍යවශ්‍ය ප්‍රධාන වෙබ් සේවා පමණි)
     private final List<String> allowedVideoDomains = Arrays.asList(
         "helasub.com", "youtube.com", "youtu.be", "tmdb.org", "image.tmdb.org"
     );
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // 🛠️ [DOOPLAY CRASH FIX 1] WebView එකේ Hardware Rendering පාවිච්චි කිරීම
+        // WebView එකේ Hardware Rendering පාවිච්චි කිරීම
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         customViewContainer = new FrameLayout(this);
@@ -62,14 +63,11 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
         
-        // 🛠️ [DOOPLAY CRASH FIX 2] WordPress cache එක නිසා රැම් එක පිරීම වැළැක්වීමට Cache Mode එක වෙනස් කිරීම
+        // 🛠️ [FIXED] වැරදි දුන් පරණ AppCache පේළි දෙක අයින් කර, ස්ථාවර Default Cache ක්‍රමය සැකසීම
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        webSettings.setAppCacheEnabled(true);
-        webSettings.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
         
-        // 🛠️ [DOOPLAY CRASH FIX 3] Dooplay තීම් එකේ දාවන වේගය වැඩි කිරීමට Render Priority එක High කිරීම
+        // Dooplay තීම් එකේ දාවන වේගය වැඩි කිරීමට Render Priority එක High කිරීම
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
-        webSettings.setEnableSmoothTransition(true);
 
         webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 10; BRAVIA 4K UR3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36");
         webSettings.setMediaPlaybackRequiresUserGesture(false);
@@ -141,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("https://helasub.com");
     }
 
-    // 🛠️ [DOOPLAY CRASH FIX 4] ඇප් එක පසුබිමට යද්දී හෝ වහද්දී මතකය (Memory) සම්පූර්ණයෙන්ම නිදහස් කිරීම
     @Override
     protected void onDestroy() {
         if (webView != null) {
