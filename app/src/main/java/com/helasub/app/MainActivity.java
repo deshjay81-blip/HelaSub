@@ -16,12 +16,9 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
 
-    // 📺 Allowed Domains (වීඩියෝ, පින්තූර සහ ට්‍රැකර්ස් නොවන අත්‍යවශ්‍ය සේවා)
+    // 📺 Allowed Domains (අත්‍යවශ්‍ය ප්‍රධාන වෙබ් සේවා පමණි)
     private final List<String> allowedVideoDomains = Arrays.asList(
-        "helasub.com", "strp2p", "live", "p2p",
-        "streamtape", "filemoon", "vidhide", "voe", "vudeo", "dood",
-        "googleusercontent", "googleapis", "youtube.com", "youtu.be",
-        "tmdb.org", "image.tmdb.org", "jwplayer", "video"
+        "helasub.com", "youtube.com", "youtu.be", "tmdb.org", "image.tmdb.org"
     );
 
     @Override
@@ -36,20 +33,19 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
         
-        // 🔥 [NEW] වීඩියෝ ප්ලේයර්ස් වලට ඇප් එක බ්‍රව්සර් එකක් වගේ පෙන්වීමට Custom User-Agent එකක් දීම
+        // Android TV Chrome User-Agent එක
         webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 10; BRAVIA 4K UR3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36");
         
-        // 📺 වීඩියෝ ඔටෝ ප්ලේ සහ මික්ස්ඩ් කන්ටෙන්ට්ස් වලට ඉඩ දීම
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         
-        // 🛑 ඇඩ්ස් සහ පොප්-අප්ස් බ්‍රව්සර් එකට රීඩිරෙක්ට් වීම වැළැක්වීම
+        // 🛑 ඇඩ්ස් රීඩිරෙක්ට් වැළැක්වීම
         webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
         webSettings.setSupportMultipleWindows(false); 
         
         webView.clearCache(true);
 
-        // JS වලින් බලෙන් අලුත් Window එකක් (ඇඩ් එකක්) ඕපන් කරන එක ලොක් කිරීම
+        // Popups සම්පූර්ණයෙන්ම Kill කිරීම
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
@@ -64,19 +60,28 @@ public class MainActivity extends AppCompatActivity {
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
                 
-                // වීඩියෝ ස්ට්‍රීම් එකක් (blob:) හෝ static files, m3u8 වැනි දේ නම් කෙලින්ම ඉඩ දෙන්න
-                if (url.startsWith("blob:") || url.contains("blob") || url.contains(".m3u8") || url.contains(".mp4")) {
+                // 🔥 [SUPER FIX] වීඩියෝ ස්ට්‍රීමිං වලට අදාළ ඕනෑම ලින්ක් එකක් හෝ ෆයිල් format එකක් නම් බ්ලොක් නොකර කෙලින්ම ඉඩ දෙන්න
+                if (url.startsWith("blob:") || 
+                    url.contains("blob") || 
+                    url.contains(".m3u8") || 
+                    url.contains(".mp4") || 
+                    url.contains(".ts") || 
+                    url.contains(".m4s") || 
+                    url.contains("stream") || 
+                    url.contains("player") || 
+                    url.contains("p2p") || 
+                    url.contains("live")) {
                     return super.shouldInterceptRequest(view, request);
                 }
                 
-                // අනුමත වීඩියෝ, TMDB පින්තූර සහ අපේ සයිට් එකේ ඩොමේන් පරීක්ෂාව
+                // අනුමත ප්‍රධාන ඩොමේන් පරීක්ෂාව (HelaSub සහ TMDB පින්තූර සඳහා)
                 for (String domain : allowedVideoDomains) {
                     if (url.contains(domain)) {
                         return super.shouldInterceptRequest(view, request);
                     }
                 }
                 
-                // ඇඩ්ස් ඔක්කොම මෙතනින් බ්ලොක් වේ
+                // ඉහත කිසිම එකකට අයිති නැති අනෙක් සියලුම රහසිගත ඇඩ් ලින්ක්ස් මෙතනින් බ්ලොක් වේ
                 return new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream("".getBytes()));
             }
 
@@ -85,13 +90,10 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
                 
-                // අපේ සයිට් එක ඇතුළේ නම් විතරක් ඇප් එක ඇතුළෙම යන්න දෙන්න
                 if (url.contains("helasub.com")) {
                     return false; 
                 }
-                
-                // අන් සියලුම බාහිර ඇඩ් රීඩිරෙක්ට් කිරීම් බ්‍රව්සර් එකට යන්න නොදී මෙතනින්ම බ්ලොක් කරයි!
-                return true;
+                return true; // බාහිර ඇඩ්ස් රීඩිරෙක්ට් වීම් 100% ක් ලොක් කරයි
             }
         });
 
