@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private WebChromeClient.CustomViewCallback customViewCallback;
     private View customView;
 
+    // 📺 Allowed Domains (අත්‍යවශ්‍ය ප්‍රධාන වෙබ් සේවා පමණි)
     private final List<String> allowedVideoDomains = Arrays.asList(
         "helasub.com", "youtube.com", "youtu.be", "tmdb.org", "image.tmdb.org"
     );
@@ -54,24 +55,25 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
         
-        // Android TV Chrome User-Agent
+        // Android TV Chrome User-Agent එක මඟින් වීඩියෝ බ්ලොක් වීම් වැළැක්වීම
         webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 10; BRAVIA 4K UR3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36");
         
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         
+        // 🛑 ඇඩ්ස් රීඩිරෙක්ට් සහ Popups වැළැක්වීම
         webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
         webSettings.setSupportMultipleWindows(false); 
         webView.clearCache(true);
 
-        // 🔥 [FULL SCREEN FIX] වීඩියෝවක් Full Screen කරන විට සහ නැවත සාමාන්‍ය තත්වයට පත් කරන විට ක්‍රියාත්මක වන කොටස
+        // 📺 [FULL SCREEN FIXED] වීඩියෝවක් Full Screen කරන විට ක්‍රියාත්මක වන කොටස
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
                 return false; 
             }
 
-            // වීඩියෝව Full Screen කරන විට
+            // වීඩියෝව Full Screen බටන් එක එබූ විට
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 if (customView != null) {
@@ -86,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
                 
                 webView.setVisibility(View.GONE);
                 customViewContainer.addView(customView);
-                customViewContainer.setVisibility(View.閲覧_VISIBLE);
                 customViewContainer.setVisibility(View.VISIBLE);
             }
 
@@ -107,45 +108,51 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.setWebViewClient(new WebViewClient() {
+            // 1. පසුබිමෙන් ලෝඩ් වෙන දේවල් (Ads & Video Streams) ෆิල්ටර් කිරීම
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
                 
+                // වීඩියෝ ස්ට්‍රීරීම්, m3u8, chunks සහ p2p ලින්ක්ස් වලට කෙලින්ම ඉඩ දීම
                 if (url.startsWith("blob:") || url.contains("blob") || url.contains(".m3u8") || url.contains(".mp4") || url.contains(".ts") || url.contains(".m4s") || url.contains("stream") || url.contains("player") || url.contains("p2p") || url.contains("live")) {
                     return super.shouldInterceptRequest(view, request);
                 }
                 
+                // අනුමත ප්‍රධාන ඩොමේන් පරීක්ෂාව
                 for (String domain : allowedVideoDomains) {
                     if (url.contains(domain)) {
                         return super.shouldInterceptRequest(view, request);
                     }
                 }
+                
+                // අනෙක් සියලුම ඇඩ් ලින්ක්ස් බ්ලොක් කිරීම
                 return new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream("".getBytes()));
             }
 
+            // 2. පරිශීලකයා ක්ලික් කරන ලින්ක් සහ ඔටෝ රීඩිරෙක්ට් පාලනය
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
                 if (url.contains("helasub.com")) {
                     return false; 
                 }
-                return true; 
+                return true; // බාහිර ඇඩ්ස් රීඩිරෙක්ට් වීම් 100% ක් ලොක් කරයි
             }
         });
 
         webView.loadUrl("https://helasub.com");
     }
 
-    // Back Button එක එබුවම Full Screen එකෙන් අයින් වෙන්න හෝ කලින් පිටුවට යන්න සකස් කිරීම
+    // Back Button එක එබුවම ක්‍රියාත්මක වන ආකාරය
     @Override
     public void onBackPressed() {
         if (customView != null) {
-            // Full screen වීඩියෝවක් ප්ලේ වෙනවා නම් Back එබූ විට ඇප් එක වැහෙන්නේ නැතුව Full screen එකෙන් අයින් වේ
+            // වීඩියෝවක් Full screen ප්ලේ වේ නම්, Back එබූ විට Full screen එකෙන් පමණක් ඉවත් වේ
             webView.getWebChromeClient().onHideCustomView();
         } else if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+            webView.goBack(); // කලින් පිටුවට යාම
         } else {
-            super.onBackPressed();
+            super.onBackPressed(); // ඇප් එකෙන් ඉවත් වීම
         }
     }
 }
