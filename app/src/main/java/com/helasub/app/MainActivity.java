@@ -1,5 +1,7 @@
 package com.helasub.app;
 
+import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
     private WebChromeClient.CustomViewCallback customViewCallback;
     private View customView;
 
-    // 📺 Allowed Domains (අත්‍යවශ්‍ය ප්‍රධාන වෙබ් සේවා පමණි)
     private final List<String> allowedVideoDomains = Arrays.asList(
         "helasub.com", "youtube.com", "youtu.be", "tmdb.org", "image.tmdb.org"
     );
@@ -36,6 +37,15 @@ public class MainActivity extends AppCompatActivity {
             WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
         );
 
+        // 💡 [NEW FEATURE] ෆිල්ම් එක ප්ලේ වෙද්දී ස්ක්‍රීන් එක SLEEP/OFF වීම වැළැක්වීම
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // Sony Side Sense සහ Notch අයිනේ තියෙන දේවල් full screen එකේදී හැංගීමට (Android 9 සහ ඉහළ)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getWindow().getAttributes().layoutInDisplayCutoutMode = 
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+
         super.onCreate(savedInstanceState);
 
         FrameLayout mainLayout = new FrameLayout(this);
@@ -45,8 +55,6 @@ public class MainActivity extends AppCompatActivity {
         webView = new WebView(this);
         webView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        // WebView එකේ Hardware Rendering පාවිච්චි කිරීම
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         customViewContainer = new FrameLayout(this);
@@ -62,11 +70,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
-        
-        // 🛠️ [FIXED] වැරදි දුන් පරණ AppCache පේළි දෙක අයින් කර, ස්ථාවර Default Cache ක්‍රමය සැකසීම
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        
-        // Dooplay තීම් එකේ දාවන වේගය වැඩි කිරීමට Render Priority එක High කිරීම
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
 
         webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 10; BRAVIA 4K UR3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36");
@@ -82,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 return false; 
             }
 
+            // 📺 වීඩියෝව Full Screen බටන් එක එබූ විට
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 if (customView != null) {
@@ -90,16 +95,34 @@ public class MainActivity extends AppCompatActivity {
                 }
                 customView = view;
                 customViewCallback = callback;
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                
+                // Full Screen කරපු ගමන් බලෙන් Landscape කිරීම
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                
+                // 💡 [NEW FEATURE] Immersive Mode එක ඔන් කිරීම (Back, Home, Recent සහ Sony Side Sense සැඟවීම)
+                getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // යට බටන් 3 හැංගීම
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN // උඩ ස්ටේටස් බාර් එක හැංගීම
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // ස්ක්‍රීන් එක උඩින් ඇද්දත් බටන්ස් ස්ථිරවම හැංගී තිබීම
+                );
+
                 webView.setVisibility(View.GONE);
                 customViewContainer.addView(customView);
                 customViewContainer.setVisibility(View.VISIBLE);
             }
 
+            // Full Screen එකෙන් ඉවත් වන විට (නැවත සාමාන්‍ය තත්වයට පත් කිරීම)
             @Override
             public void onHideCustomView() {
                 if (customView == null) return;
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                // Immersive Mode එක අයින් කර සාමාන්‍ය බටන් ටික ආපහු පෙන්වීම
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                
                 customView.setVisibility(View.GONE);
                 customViewContainer.removeView(customView);
                 customView = null;
@@ -113,11 +136,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
-                
                 if (url.startsWith("blob:") || url.contains("blob") || url.contains(".m3u8") || url.contains(".mp4") || url.contains(".ts") || url.contains(".m4s") || url.contains("stream") || url.contains("player") || url.contains("p2p") || url.contains("live")) {
                     return super.shouldInterceptRequest(view, request);
                 }
-                
                 for (String domain : allowedVideoDomains) {
                     if (url.contains(domain)) {
                         return super.shouldInterceptRequest(view, request);
@@ -133,6 +154,19 @@ public class MainActivity extends AppCompatActivity {
                     return false; 
                 }
                 return true; 
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                view.evaluateJavascript(
+                    "javascript:(function() { " +
+                    "var style = document.createElement('style'); " +
+                    "style.innerHTML = '* { animation: none !important; transition: none !important; text-shadow: none !important; box-shadow: none !important; } " +
+                    "img { will-change: auto !important; image-rendering: auto !important; } " +
+                    ".sl-slider-wrapper, .carousel, .g-recaptcha { will-change: auto !important; }'; " +
+                    "document.head.appendChild(style); " +
+                    "})()", null);
+                super.onPageFinished(view, url);
             }
         });
 
