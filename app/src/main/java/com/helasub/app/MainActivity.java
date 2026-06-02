@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString().toLowerCase();
-                if (url.contains("helasub.com")) {
+                if (url.contains("app.helasub.com")) {
                     return false; 
                 }
                 return true; 
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        webView.loadUrl("https://helasub.com");
+        webView.loadUrl("https://app.helasub.com");
     }
 
     @Override
